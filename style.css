@@ -1,0 +1,301 @@
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Georgia', serif;
+  background: #f5f4f0;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+/* ── Site header ── */
+.site-header {
+  background: #1b3a5c;
+  color: #fff;
+  padding: 1.25rem 2rem;
+  text-align: center;
+}
+
+.site-header h1 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+}
+
+.site-header p {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-top: 0.35rem;
+  font-style: italic;
+}
+
+/* ── Main layout ── */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+/* ── Map container ── */
+#map-container {
+  position: relative;
+  background: #eaf3fb;
+  border: 1px solid #c8dbe9;
+  border-radius: 8px;
+  overflow: visible;
+  padding: 0.5rem;
+}
+
+#map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* State paths */
+.state-path {
+  stroke: #fff;
+  stroke-width: 0.8px;
+  cursor: pointer;
+  transition: filter 0.15s, stroke-width 0.15s;
+}
+
+.state-path:hover {
+  stroke: #1b3a5c;
+  stroke-width: 2px;
+  filter: brightness(0.88);
+}
+
+/* ── Legend ── */
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
+  margin-top: 1.1rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border: 1px solid #d6d6d6;
+  border-radius: 6px;
+  font-size: 0.84rem;
+}
+
+.legend-title {
+  width: 100%;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #1b3a5c;
+  margin-bottom: 0.1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.legend-swatch.pending-swatch {
+  background: repeating-linear-gradient(
+    45deg,
+    #fd8d3c,
+    #fd8d3c 4px,
+    #fdd0a2 4px,
+    #fdd0a2 8px
+  );
+}
+
+/* ── Tooltip ── */
+#tooltip {
+  position: fixed;
+  display: none;
+  background: #fff;
+  border: 1px solid #c8c8c8;
+  border-radius: 7px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+  padding: 0.7rem 0.9rem;
+  max-width: 300px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+#tooltip .tt-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1b3a5c;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+#tooltip .tt-section {
+  margin-top: 0.35rem;
+}
+
+#tooltip .tt-label {
+  font-weight: 700;
+  color: #444;
+}
+
+#tooltip .tt-none {
+  color: #888;
+  font-style: italic;
+}
+
+#tooltip .tt-pending-badge {
+  display: inline-block;
+  background: #fd8d3c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 0 5px;
+  margin-left: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+}
+
+#tooltip .tt-click-hint {
+  margin-top: 0.5rem;
+  font-style: italic;
+  color: #888;
+  font-size: 0.75rem;
+  border-top: 1px solid #ebebeb;
+  padding-top: 0.35rem;
+}
+
+/* ── State detail page ── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #2171b5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+  font-family: 'Georgia', serif;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+.state-hero {
+  margin-bottom: 1.5rem;
+}
+
+.state-hero h2 {
+  font-size: 2rem;
+  color: #1b3a5c;
+}
+
+.state-hero .abbr-badge {
+  display: inline-block;
+  background: #1b3a5c;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.waiver-card {
+  background: #fff;
+  border-radius: 8px;
+  border-left: 5px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.waiver-card.card-1115  { border-left-color: #2171b5; }
+.waiver-card.card-1915  { border-left-color: #238b45; }
+.waiver-card.card-pending { border-left-color: #fd8d3c; }
+.waiver-card.card-none  { border-left-color: #aaa; }
+
+.waiver-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.waiver-card h3 .tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 2px 7px;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.tag-1115    { background: #2171b5; }
+.tag-1915    { background: #238b45; }
+.tag-pending { background: #fd8d3c; }
+
+.waiver-card .waiver-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1b3a5c;
+  margin-bottom: 0.5rem;
+}
+
+.dates-grid {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 0.6rem 0 0.8rem;
+  background: #f5f4f0;
+  border-radius: 5px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.83rem;
+}
+
+.dates-grid .date-item strong {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #666;
+}
+
+.waiver-details {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-line;
+}
+
+.count-note {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.4rem;
+}
+
+.no-waiver-msg {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem 1.5rem;
+  color: #666;
+  font-style: italic;
+  border: 1px solid #ddd;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .site-header h1 { font-size: 1.15rem; }
+  .dates-grid { gap: 0.8rem; }
+  #tooltip { max-width: 240px; font-size: 0.78rem; }
+}

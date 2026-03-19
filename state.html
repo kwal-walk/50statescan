@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>State Profile — Medicaid Nutrition Waivers</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="data.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Nutrition Services in Medicaid Waivers: A 50-State Scan</h1>
+  <p>State Waiver Profile</p>
+</header>
+
+<main>
+  <a class="back-link" href="index.html">&#8592; Back to Map</a>
+  <div id="state-content"></div>
+</main>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const abbr = (params.get("state") || "").toUpperCase();
+const s = STATE_DATA[abbr];
+const container = document.getElementById("state-content");
+
+if (!s) {
+  container.innerHTML = `<div class="no-waiver-msg">State not found. <a href="index.html">Return to map.</a></div>`;
+} else {
+  document.title = `${s.name} — Medicaid Nutrition Waivers`;
+
+  let html = `
+    <div class="state-hero">
+      <h2>${s.name} <span class="abbr-badge">${s.abbr}</span></h2>
+    </div>
+  `;
+
+  const has1115    = s.waiver1115.approved;
+  const has1915    = s.waiver1915.approved;
+  const hasPending = s.waiver1115pending.pending;
+  const hasAny     = has1115 || has1915 || hasPending;
+
+  if (!hasAny) {
+    html += `<div class="no-waiver-msg">No §1115 or §1915 nutrition waiver identified for ${s.name} in this scan.</div>`;
+  }
+
+  // ── §1115 Approved ──────────────────────────────────────────────────────
+  if (has1115) {
+    const w = s.waiver1115;
+    html += `<div class="waiver-card card-1115">`;
+    html += `<h3><span class="tag tag-1115">§1115</span> Approved Waiver</h3>`;
+    if (w.name) html += `<div class="waiver-name">${escHtml(w.name)}</div>`;
+    if (w.count > 1) html += `<div class="count-note">Note: ${w.count} §1115 waivers identified for this state. The entry below reflects the nutrition-relevant waiver.</div>`;
+    if (w.dates) {
+      html += `<div class="dates-grid">${parseDates(w.dates)}</div>`;
+    }
+    if (w.details) {
+      html += `<div class="waiver-details">${escHtml(w.details)}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // ── §1115 Pending ───────────────────────────────────────────────────────
+  if (hasPending) {
+    const p = s.waiver1115pending;
+    html += `<div class="waiver-card card-pending">`;
+    html += `<h3><span class="tag tag-pending">§1115 PENDING</span> Pending Waiver</h3>`;
+    if (p.name) html += `<div class="waiver-name">${escHtml(p.name)}</div>`;
+    if (p.submitted) {
+      html += `<div class="dates-grid"><div class="date-item"><strong>Date Submitted</strong>${escHtml(p.submitted)}</div></div>`;
+    }
+    if (p.details) {
+      html += `<div class="waiver-details">${escHtml(p.details)}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // ── §1915 Approved ──────────────────────────────────────────────────────
+  if (has1915) {
+    const w = s.waiver1915;
+    html += `<div class="waiver-card card-1915">`;
+    html += `<h3><span class="tag tag-1915">§1915</span> Approved Waiver</h3>`;
+    if (w.name) html += `<div class="waiver-name">${escHtml(w.name)}</div>`;
+    if (w.count > 1) html += `<div class="count-note">Note: ${w.count} §1915 waivers identified for this state. The entry below reflects the nutrition-relevant waiver.</div>`;
+    if (w.dates) {
+      html += `<div class="dates-grid">${parseDates(w.dates)}</div>`;
+    }
+    if (w.details) {
+      html += `<div class="waiver-details">${escHtml(w.details)}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function parseDates(datesStr) {
+  const labels = ["Approval", "Effective", "Expiration"];
+  let out = "";
+  for (const label of labels) {
+    const m = datesStr.match(new RegExp(label + ":\\s*([^\\n]+)"));
+    if (m) {
+      out += `<div class="date-item"><strong>${label}</strong>${escHtml(m[1].trim())}</div>`;
+    }
+  }
+  return out || `<div class="date-item">${escHtml(datesStr)}</div>`;
+}
+</script>
+</body>
+</html>
