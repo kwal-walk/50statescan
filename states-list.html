@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>States List — Medicaid Nutrition Waivers</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="data.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">Nutrition Services in Medicaid</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="map-1115.html">§1115 Waivers</a></li>
+      <li><a href="map-1915.html">§1915 Waivers</a></li>
+      <li><a href="map-ilos.html">ILOS</a></li>
+      <li><a href="states-list.html" class="active">States List</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="map-header">
+  <h1>States List</h1>
+  <p>Click any state to view its full waiver profile</p>
+</div>
+
+<div class="states-list-container">
+  <ul class="states-grid" id="states-grid"></ul>
+</div>
+
+<footer class="site-footer">
+  <p>Developed for a Master of Public Health capstone project &nbsp;·&nbsp;
+     Research conducted in March 2026 &nbsp;·&nbsp;
+     <a href="https://github.com/kwal-walk/50statescan" target="_blank">GitHub</a>
+  </p>
+</footer>
+
+<script>
+const sorted = Object.entries(STATE_DATA)
+  .sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+const grid = document.getElementById("states-grid");
+sorted.forEach(([abbr, s]) => {
+  const li = document.createElement("li");
+  const a  = document.createElement("a");
+  a.href = `state.html?state=${abbr}&from=list`;
+  a.textContent = s.name;
+  li.appendChild(a);
+  grid.appendChild(li);
+});
+</script>
+
+</body>
+</html>
