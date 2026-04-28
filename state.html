@@ -9,111 +9,186 @@
 </head>
 <body>
 
-<header class="site-header">
-  <h1>Nutrition Services in Medicaid Waivers: A 50-State Scan</h1>
-  <p>State Waiver Profile</p>
-</header>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">Nutrition Services in Medicaid</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="map-1115.html">§1115 Waivers</a></li>
+      <li><a href="map-1915.html">§1915 Waivers</a></li>
+      <li><a href="map-ilos.html">ILOS</a></li>
+    </ul>
+  </div>
+</nav>
 
-<main>
-  <a class="back-link" href="index.html">&#8592; Back to Map</a>
-  <div id="state-content"></div>
-</main>
+<div id="state-content"></div>
+
+<footer class="site-footer">
+  <p>Developed for a Master of Public Health capstone project &nbsp;·&nbsp;
+     Data current as of May 2025 &nbsp;·&nbsp;
+     <a href="https://github.com/kwal-walk/50statescan" target="_blank">GitHub</a>
+  </p>
+</footer>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 const abbr = (params.get("state") || "").toUpperCase();
+const from  = params.get("from") || "1115";
 const s = STATE_DATA[abbr];
 const container = document.getElementById("state-content");
 
+const backMap = {
+  "1115": ["map-1115.html", "§1115 Waivers Map"],
+  "1915": ["map-1915.html", "§1915 Waivers Map"],
+  "ilos": ["map-ilos.html", "ILOS Map"]
+};
+const [backHref, backLabel] = backMap[from] || backMap["1115"];
+
 if (!s) {
-  container.innerHTML = `<div class="no-waiver-msg">State not found. <a href="index.html">Return to map.</a></div>`;
+  container.innerHTML = `
+    <div class="state-page-header">
+      <div class="state-page-inner">
+        <a class="state-back" href="${backHref}">← ${backLabel}</a>
+        <h1>State not found</h1>
+      </div>
+    </div>
+    <div class="state-page-content">
+      <div class="no-waiver-card">State not found. <a href="index.html">Return to home.</a></div>
+    </div>`;
 } else {
   document.title = `${s.name} — Medicaid Nutrition Waivers`;
 
-  let html = `
-    <div class="state-hero">
-      <h2>${s.name} <span class="abbr-badge">${s.abbr}</span></h2>
-    </div>
-  `;
-
   const has1115    = s.waiver1115.approved;
-  const has1915    = s.waiver1915.approved;
   const hasPending = s.waiver1115pending.pending;
-  const hasAny     = has1115 || has1915 || hasPending;
+  const has1915    = s.waiver1915.approved;
+  const ilosStatus = s.ilos.status;
 
-  if (!hasAny) {
-    html += `<div class="no-waiver-msg">No §1115 or §1915 nutrition waiver identified for ${s.name} in this scan.</div>`;
-  }
+  // Build badges
+  let badges = "";
+  if (has1115)    badges += `<span class="s-badge b1115">§1115 Approved</span>`;
+  if (hasPending) badges += `<span class="s-badge bpending">§1115 Pending</span>`;
+  if (has1915)    badges += `<span class="s-badge b1915">§1915 Approved</span>`;
+  if (ilosStatus === "yes") badges += `<span class="s-badge bilos">ILOS Identified</span>`;
+  if (!has1115 && !hasPending && !has1915 && ilosStatus !== "yes")
+    badges += `<span class="s-badge bnone">No waivers identified</span>`;
 
-  // ── §1115 Approved ──────────────────────────────────────────────────────
+  let html = `
+    <div class="state-page-header">
+      <div class="state-page-inner">
+        <a class="state-back" href="${backHref}">← ${backLabel}</a>
+        <h1>${s.name}</h1>
+        <div class="state-badges">${badges}</div>
+      </div>
+    </div>
+    <div class="state-page-content">`;
+
+  // ── §1115 Section ──────────────────────────────────────────────────────────
+  html += `
+    <div class="sp-section">
+      <div class="sp-section-head">
+        <div class="sp-dot d1115"></div>
+        <h2>§1115 Demonstration Waiver</h2>
+      </div>`;
+
   if (has1115) {
     const w = s.waiver1115;
-    html += `<div class="waiver-card card-1115">`;
-    html += `<h3><span class="tag tag-1115">§1115</span> Approved Waiver</h3>`;
-    if (w.name) html += `<div class="waiver-name">${escHtml(w.name)}</div>`;
-    if (w.count > 1) html += `<div class="count-note">Note: ${w.count} §1115 waivers identified for this state. The entry below reflects the nutrition-relevant waiver.</div>`;
-    if (w.dates) {
-      html += `<div class="dates-grid">${parseDates(w.dates)}</div>`;
-    }
-    if (w.details) {
-      html += `<div class="waiver-details">${escHtml(w.details)}</div>`;
-    }
+    html += `<div class="waiver-block">`;
+    if (w.name) html += `<h3>${esc(w.name)}</h3>`;
+    if (w.count > 1) html += `<p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">
+      ${w.count} §1115 waivers identified for this state.</p>`;
+    if (w.dates) html += `<div class="waiver-dates">${parseDates(w.dates)}</div>`;
+    if (w.details) html += `<div class="waiver-details">${esc(w.details)}</div>`;
     html += `</div>`;
+  } else {
+    html += `<div class="no-waiver-card">No approved §1115 nutrition waiver identified for ${s.name}.</div>`;
   }
+  html += `</div>`;
 
-  // ── §1115 Pending ───────────────────────────────────────────────────────
+  // ── §1115 Pending Section ──────────────────────────────────────────────────
   if (hasPending) {
     const p = s.waiver1115pending;
-    html += `<div class="waiver-card card-pending">`;
-    html += `<h3><span class="tag tag-pending">§1115 PENDING</span> Pending Waiver</h3>`;
-    if (p.name) html += `<div class="waiver-name">${escHtml(p.name)}</div>`;
-    if (p.submitted) {
-      html += `<div class="dates-grid"><div class="date-item"><strong>Date Submitted</strong>${escHtml(p.submitted)}</div></div>`;
-    }
-    if (p.details) {
-      html += `<div class="waiver-details">${escHtml(p.details)}</div>`;
-    }
-    html += `</div>`;
+    html += `
+    <div class="sp-section">
+      <div class="sp-section-head">
+        <div class="sp-dot d1115p"></div>
+        <h2>§1115 Pending Waiver</h2>
+      </div>
+      <div class="waiver-block">`;
+    if (p.name) html += `<h3>${esc(p.name)}</h3>`;
+    if (p.submitted) html += `<div class="waiver-dates">Submitted: ${esc(p.submitted)}</div>`;
+    if (p.details) html += `<div class="waiver-details">${esc(p.details)}</div>`;
+    html += `</div></div>`;
   }
 
-  // ── §1915 Approved ──────────────────────────────────────────────────────
-  if (has1915) {
-    const w = s.waiver1915;
-    html += `<div class="waiver-card card-1915">`;
-    html += `<h3><span class="tag tag-1915">§1915</span> Approved Waiver</h3>`;
-    if (w.name) html += `<div class="waiver-name">${escHtml(w.name)}</div>`;
-    if (w.count > 1) html += `<div class="count-note">Note: ${w.count} §1915 waivers identified for this state. The entry below reflects the nutrition-relevant waiver.</div>`;
-    if (w.dates) {
-      html += `<div class="dates-grid">${parseDates(w.dates)}</div>`;
+  // ── §1915 Section ──────────────────────────────────────────────────────────
+  html += `
+    <div class="sp-section">
+      <div class="sp-section-head">
+        <div class="sp-dot d1915"></div>
+        <h2>§1915 Home &amp; Community-Based Services Waivers</h2>
+      </div>`;
+
+  if (has1915 && s.waiver1915.waivers.length > 0) {
+    s.waiver1915.waivers.forEach(w => {
+      html += `<div class="waiver-block">`;
+      if (w.name) html += `<h3>${esc(w.name)}</h3>`;
+      if (w.dates) html += `<div class="waiver-dates">${parseDates(w.dates)}</div>`;
+      if (w.details) html += `<div class="waiver-details">${esc(w.details)}</div>`;
+      html += `</div>`;
+    });
+  } else {
+    html += `<div class="no-waiver-card">No approved §1915 nutrition waiver identified for ${s.name}.</div>`;
+  }
+  html += `</div>`;
+
+  // ── ILOS Section ───────────────────────────────────────────────────────────
+  html += `
+    <div class="sp-section">
+      <div class="sp-section-head">
+        <div class="sp-dot dilos"></div>
+        <h2>In Lieu of Services and Settings (ILOS)</h2>
+      </div>`;
+
+  if (ilosStatus === "na") {
+    html += `<div class="no-waiver-card">N/A — ${s.name} does not have Medicaid managed care and therefore does not use ILOS.</div>`;
+  } else if (ilosStatus === "yes") {
+    html += `<div class="waiver-block">`;
+    if (s.ilos.services) {
+      html += `<h3>Nutrition-Related ILOS Services</h3>`;
+      html += `<div class="waiver-details">${esc(s.ilos.services)}</div>`;
     }
-    if (w.details) {
-      html += `<div class="waiver-details">${escHtml(w.details)}</div>`;
+    if (s.ilos.links_garfield || s.ilos.links_add) {
+      html += `<div style="margin-top:1rem;font-size:0.83rem;color:var(--muted);">`;
+      if (s.ilos.links_garfield) html += `<p><strong>Government sources:</strong><br>${esc(s.ilos.links_garfield)}</p>`;
+      if (s.ilos.links_add) html += `<p style="margin-top:0.5rem;"><strong>Additional sources:</strong><br>${esc(s.ilos.links_add)}</p>`;
+      if (s.ilos.literature) html += `<p style="margin-top:0.5rem;"><strong>Published literature:</strong><br>${esc(s.ilos.literature)}</p>`;
+      html += `</div>`;
     }
     html += `</div>`;
+  } else {
+    html += `<div class="no-waiver-card">No ILOS for nutrition services identified for ${s.name}.</div>`;
   }
+  html += `</div>`;
 
+  html += `</div>`; // close state-page-content
   container.innerHTML = html;
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
-function escHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
 function parseDates(datesStr) {
-  const labels = ["Approval", "Effective", "Expiration"];
-  let out = "";
+  const labels = ["Approval","Effective","Expiration"];
+  let parts = [];
   for (const label of labels) {
     const m = datesStr.match(new RegExp(label + ":\\s*([^\\n]+)"));
-    if (m) {
-      out += `<div class="date-item"><strong>${label}</strong>${escHtml(m[1].trim())}</div>`;
-    }
+    if (m) parts.push(`${label}: ${m[1].trim()}`);
   }
-  return out || `<div class="date-item">${escHtml(datesStr)}</div>`;
+  return parts.length ? parts.join("  ·  ") : esc(datesStr);
 }
 </script>
 </body>

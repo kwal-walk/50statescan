@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>§1915 Waivers — 50-State Scan</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">Nutrition Services in Medicaid</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="map-1115.html">§1115 Waivers</a></li>
+      <li><a href="map-1915.html" class="active">§1915 Waivers</a></li>
+      <li><a href="map-ilos.html">ILOS</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="map-header">
+  <h1>§1915 Home &amp; Community-Based Services Waivers — Nutrition Services</h1>
+  <p>Hover over a state to see waiver details &nbsp;·&nbsp; Click to view the full state profile</p>
+</div>
+
+<main class="map-main">
+  <div id="map-container">
+    <svg id="map" viewBox="0 0 960 600"></svg>
+  </div>
+
+  <div id="legend">
+    <div class="legend-title">Waiver Status — §1915</div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#238b45"></div>
+      <span>§1915 waiver approved</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#d9d9d9"></div>
+      <span>No §1915 nutrition waiver identified</span>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>Developed for a Master of Public Health capstone project &nbsp;·&nbsp;
+     Data current as of May 2025 &nbsp;·&nbsp;
+     <a href="https://github.com/kwal-walk/50statescan" target="_blank">GitHub</a>
+  </p>
+</footer>
+
+<div id="tooltip"></div>
+
+<script>
+const FIPS = {
+  "01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT",
+  "10":"DE","11":"DC","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL",
+  "18":"IN","19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD",
+  "25":"MA","26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE",
+  "32":"NV","33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND",
+  "39":"OH","40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD",
+  "47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV",
+  "55":"WI","56":"WY"
+};
+
+function getColor1915(abbr) {
+  const s = STATE_DATA[abbr];
+  if (!s) return "#d9d9d9";
+  return s.waiver1915.approved ? "#238b45" : "#d9d9d9";
+}
+
+const tooltip = document.getElementById("tooltip");
+
+function buildTooltip(abbr) {
+  const s = STATE_DATA[abbr];
+  if (!s) return `<div class="tt-name">${abbr}</div><span class="tt-none">No data</span>`;
+  let html = `<div class="tt-name">${s.name}</div>`;
+  html += `<div class="tt-section"><span class="tt-label">§1915 Waivers:</span> `;
+  if (s.waiver1915.approved && s.waiver1915.waivers.length > 0) {
+    html += `${s.waiver1915.count} waiver${s.waiver1915.count !== 1 ? "s" : ""}`;
+    s.waiver1915.waivers.forEach(w => {
+      html += `<br><small>• ${w.name}`;
+      const m = w.dates.match(/Expiration:\s*([^\n]+)/);
+      if (m) html += ` — expires ${m[1].trim()}`;
+      html += `</small>`;
+    });
+  } else {
+    html += `<span class="tt-none">None identified</span>`;
+  }
+  html += `</div>`;
+  html += `<div class="tt-click-hint">Click to view full state profile →</div>`;
+  return html;
+}
+
+function showTooltip(evt, abbr) {
+  tooltip.innerHTML = buildTooltip(abbr);
+  tooltip.style.display = "block";
+  moveTooltip(evt);
+}
+function moveTooltip(evt) {
+  const pad = 14, tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + tw > window.innerWidth  - 10) x = evt.clientX - tw - pad;
+  if (y + th > window.innerHeight - 10) y = evt.clientY - th - pad;
+  tooltip.style.left = x + "px"; tooltip.style.top = y + "px";
+}
+function hideTooltip() { tooltip.style.display = "none"; }
+
+const svg = d3.select("#map");
+const projection = d3.geoAlbersUsa().scale(1280).translate([487, 300]);
+const path = d3.geoPath().projection(projection);
+
+fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
+  .then(r => r.json())
+  .then(us => {
+    const states = topojson.feature(us, us.objects.states);
+
+    svg.selectAll(".state-path")
+      .data(states.features)
+      .enter().append("path")
+        .attr("class","state-path")
+        .attr("d", path)
+        .attr("fill", d => getColor1915(FIPS[d.id.toString().padStart(2,"0")]))
+        .on("mouseover", (evt,d) => showTooltip(evt, FIPS[d.id.toString().padStart(2,"0")]))
+        .on("mousemove", moveTooltip)
+        .on("mouseout",  hideTooltip)
+        .on("click",    (evt,d) => {
+          const abbr = FIPS[d.id.toString().padStart(2,"0")];
+          if (abbr) window.location.href = "state.html?state=" + abbr + "&from=1915";
+        });
+
+    svg.append("path")
+      .datum(topojson.mesh(us, us.objects.states, (a,b) => a !== b))
+      .attr("fill","none").attr("stroke","#fff").attr("stroke-width","0.5px")
+      .attr("d", path);
+
+    // ── DC inset ────────────────────────────────────────────────────────────
+    const dcFeature = states.features.find(d => d.id.toString().padStart(2,"0") === "11");
+    if (dcFeature) {
+      const dcCentroid = path.centroid(dcFeature);
+      const insetX = 810, insetY = 430, insetW = 90, insetH = 80;
+      const dcProj = d3.geoMercator().center([-77.0369,38.9072]).scale(55000)
+        .translate([insetX + insetW/2, insetY + insetH/2]);
+      const dcPath = d3.geoPath().projection(dcProj);
+
+      svg.append("circle")
+        .attr("cx",dcCentroid[0]).attr("cy",dcCentroid[1]).attr("r",4)
+        .attr("fill",getColor1915("DC")).attr("stroke","#fff").attr("stroke-width",1.2);
+      svg.append("line")
+        .attr("x1",dcCentroid[0]).attr("y1",dcCentroid[1])
+        .attr("x2",insetX+insetW/2).attr("y2",insetY)
+        .attr("stroke","#888").attr("stroke-width",1).attr("stroke-dasharray","4,3");
+      svg.append("rect")
+        .attr("x",insetX).attr("y",insetY).attr("width",insetW).attr("height",insetH)
+        .attr("fill","#eaf3fb").attr("stroke","#aaa").attr("stroke-width",1).attr("rx",4);
+      svg.append("path").datum(dcFeature).attr("class","state-path")
+        .attr("d",dcPath).attr("fill",getColor1915("DC"))
+        .on("mouseover",evt=>showTooltip(evt,"DC"))
+        .on("mousemove",moveTooltip).on("mouseout",hideTooltip)
+        .on("click",()=>window.location.href="state.html?state=DC&from=1915");
+      svg.append("text")
+        .attr("x",insetX+insetW/2).attr("y",insetY+insetH+13)
+        .attr("text-anchor","middle").attr("font-size","10").attr("fill","#555").text("D.C.");
+    }
+  })
+  .catch(err => {
+    document.getElementById("map-container").innerHTML =
+      `<p style="padding:2rem;color:#c00">Map failed to load.<br><small>${err}</small></p>`;
+  });
+</script>
+</body>
+</html>
