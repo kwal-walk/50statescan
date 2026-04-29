@@ -193,23 +193,72 @@
       standard metric used to compare health interventions. Lower ICERs indicate greater value.
     </p>
 
-    <p style="font-size:0.92rem;line-height:1.85;">
-      Though ICERs varied widely by CUA study, one simulation study of PRx projected a lifetime ICER of
-      $18,100/QALY,<sup><a href="https://doi.org/10.1161/JAHA.122.029215" target="_blank">3</a></sup>
-      and one simulation study of a healthy incentive projected a lifetime ICER of $13,194–$18,184/QALY
-      (depending on which foods were covered by the incentive).<sup><a href="https://doi.org/10.2337/dc25-0144" target="_blank">31</a></sup>
-      In comparison, when used as treatment for hypertension, the ICER for statins is $20,000/QALY,
-      and when used as primary prevention, this increases to $37,000/QALY.<sup><a href="https://doi.org/10.1161/JAHA.122.029215" target="_blank">3</a></sup>
-      Though it is true that statins have more immediate effects than dietary
-      changes,<sup><a href="https://doi.org/10.1371/journal.pone.0331176" target="_blank">44</a></sup>
-      they are most effective when combined with dietary change, and in some
-      instances,<sup><a href="https://lhsfna.org/statin-medications-are-not-a-blank-check-for-eating-poorly/" target="_blank">45</a></sup>
-      making dietary changes can allow patients to get off their
-      statin.<sup><a href="https://medshadow.org/integrative-health/nutrition-lifestyle/stuck-with-statins-try-a-plant-based-diet-to-cut-back/" target="_blank">46</a></sup>
-      Considering that common WTP thresholds are set at $150,000/QALY and
-      $50,000/QALY,<sup><a href="https://doi.org/10.1161/JAHA.122.029215" target="_blank">3</a>,<a href="https://doi.org/10.1371/journal.pmed.1002761" target="_blank">33</a></sup>
-      certain FIM approaches may be similar to, and in some cases even eliminate the need for,
-      current medical treatment.
+    <table class="icer-table">
+      <thead>
+        <tr>
+          <th>Study / Benchmark</th>
+          <th>ICER (cost per QALY)</th>
+          <th>Context</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="icer-fim">
+          <td><a href="https://doi.org/10.1371/journal.pmed.1002761" target="_blank">Lee et al., 2019</a> — food incentive simulation</td>
+          <td>
+            <div class="icer-bar-wrap">
+              <div class="icer-bar" style="width:65px"></div>
+              $13,194–$18,184 / QALY
+            </div>
+          </td>
+          <td>Financial incentives for healthy food in Medicare/Medicaid; range reflects FV-only vs. broader FV+ food package (health care ICER, lifetime)</td>
+        </tr>
+        <tr class="icer-fim">
+          <td><a href="https://doi.org/10.1161/JAHA.122.029215" target="_blank">Wang et al., 2023</a> — PRx simulation</td>
+          <td>
+            <div class="icer-bar-wrap">
+              <div class="icer-bar" style="width:72px"></div>
+              $18,100 / QALY
+            </div>
+          </td>
+          <td>Produce prescriptions for food-insecure adults with diabetes (25-year analysis)</td>
+        </tr>
+        <tr class="icer-bench">
+          <td><a href="https://doi.org/10.1371/journal.pone.0331176" target="_blank">Statins (benchmark)</a></td>
+          <td>
+            <div class="icer-bar-wrap">
+              <div class="icer-bar bench" style="width:100px"></div>
+              $20,000–$37,000 / QALY
+            </div>
+          </td>
+          <td>Widely accepted, commonly covered intervention</td>
+        </tr>
+        <tr class="icer-wtp">
+          <td>Standard U.S. WTP threshold</td>
+          <td>
+            <div class="icer-bar-wrap">
+              <div class="icer-bar wtp" style="width:130px"></div>
+              ~$50,000 / QALY
+            </div>
+          </td>
+          <td>Common threshold for "cost-effective" in U.S. policy analyses</td>
+        </tr>
+        <tr class="icer-wtp">
+          <td>Higher U.S. WTP threshold</td>
+          <td>
+            <div class="icer-bar-wrap">
+              <div class="icer-bar wtp" style="width:160px"></div>
+              ~$150,000 / QALY
+            </div>
+          </td>
+          <td>Upper bound used in some U.S. economic analyses</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:0.82rem;color:var(--muted);margin-top:1rem;">
+      Both FIM ICERs fall well below standard willingness-to-pay thresholds and compare favorably to
+      widely covered interventions like statins — suggesting strong cost-effectiveness if the model
+      assumptions hold in practice.
     </p>
   </div>
 </section>
