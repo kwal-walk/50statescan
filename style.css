@@ -740,6 +740,7 @@ img { max-width: 100%; display: block; }
 .icer-table tr.icer-fim td { color: var(--blue); font-weight: 600; }
 .icer-table tr.icer-bench td { color: var(--muted); }
 .icer-table tr.icer-wtp td { color: var(--green); font-weight: 600; }
+.icer-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .icer-bar-wrap { display: flex; align-items: center; gap: 0.6rem; min-width: 140px; }
 .icer-bar { height: 10px; border-radius: 5px; background: var(--blue); min-width: 4px; }
 .icer-bar.bench { background: var(--muted); opacity: 0.45; }
@@ -851,4 +852,34 @@ img { max-width: 100%; display: block; }
   .page-section { padding: 2.5rem 1.2rem; }
   .img-divider-overlay { padding: 0 1.5rem; }
   #tooltip { max-width: 240px; font-size: 0.78rem; }
+  /* ICER table: stacked card layout on small screens */
+  .icer-table, .icer-table tbody { display: block; }
+  .icer-table thead { display: none; }
+  .icer-table tr {
+    display: flex; flex-direction: column;
+    margin-bottom: 0.9rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--card-bg);
+  }
+  .icer-table tr.icer-fim { border-left: 4px solid var(--blue); }
+  .icer-table tr.icer-bench { border-left: 4px solid var(--muted); }
+  .icer-table tr.icer-wtp { border-left: 4px solid var(--green); }
+  .icer-table td {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.83rem;
+  }
+  .icer-table td:last-child { border-bottom: none; }
+  .icer-table td::before {
+    content: attr(data-label);
+    font-size: 0.67rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); min-width: 52px; flex-shrink: 0;
+    padding-top: 0.1rem;
+  }
+  .icer-bar { display: none; }
+  .icer-bar-wrap { min-width: 0; }
 }

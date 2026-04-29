@@ -82,6 +82,8 @@ function getColor1915(abbr) {
 }
 
 const tooltip = document.getElementById("tooltip");
+const isTouch = window.matchMedia("(hover: none)").matches;
+let touchedAbbr = null;
 
 function buildTooltip(abbr) {
   const s = STATE_DATA[abbr];
@@ -100,7 +102,7 @@ function buildTooltip(abbr) {
     html += `<span class="tt-none">None identified</span>`;
   }
   html += `</div>`;
-  html += `<div class="tt-click-hint">Click to view full state profile →</div>`;
+  html += `<div class="tt-click-hint">${isTouch ? "Tap again" : "Click"} to view full state profile →</div>`;
   return html;
 }
 
@@ -117,6 +119,24 @@ function moveTooltip(evt) {
   tooltip.style.left = x + "px"; tooltip.style.top = y + "px";
 }
 function hideTooltip() { tooltip.style.display = "none"; }
+
+function handleStateClick(evt, abbr) {
+  if (isTouch) {
+    if (touchedAbbr === abbr && tooltip.style.display === "block") {
+      window.location.href = "state.html?state=" + abbr + "&from=1915";
+    } else {
+      touchedAbbr = abbr;
+      showTooltip(evt, abbr);
+    }
+  } else {
+    window.location.href = "state.html?state=" + abbr + "&from=1915";
+  }
+}
+document.addEventListener("click", function(e) {
+  if (isTouch && !e.target.classList.contains("state-path")) {
+    touchedAbbr = null; hideTooltip();
+  }
+});
 
 const svg = d3.select("#map");
 const projection = d3.geoAlbersUsa().scale(1280).translate([487, 300]);
@@ -138,7 +158,7 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
         .on("mouseout",  hideTooltip)
         .on("click",    (evt,d) => {
           const abbr = FIPS[d.id.toString().padStart(2,"0")];
-          if (abbr) window.location.href = "state.html?state=" + abbr + "&from=1915";
+          if (abbr) handleStateClick(evt, abbr);
         });
 
     svg.append("path")
@@ -169,7 +189,7 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
         .attr("d",dcPath).attr("fill",getColor1915("DC"))
         .on("mouseover",evt=>showTooltip(evt,"DC"))
         .on("mousemove",moveTooltip).on("mouseout",hideTooltip)
-        .on("click",()=>window.location.href="state.html?state=DC&from=1915");
+        .on("click", evt => handleStateClick(evt, "DC"));
       svg.append("text")
         .attr("x",insetX+insetW/2).attr("y",insetY+insetH+13)
         .attr("text-anchor","middle").attr("font-size","10").attr("fill","#555").text("D.C.");

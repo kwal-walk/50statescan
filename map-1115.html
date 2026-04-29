@@ -96,6 +96,8 @@ function hasPending1115(abbr) {
 }
 
 const tooltip = document.getElementById("tooltip");
+const isTouch = window.matchMedia("(hover: none)").matches;
+let touchedAbbr = null;
 
 function buildTooltip(abbr) {
   const s = STATE_DATA[abbr];
@@ -121,7 +123,7 @@ function buildTooltip(abbr) {
     if (s.waiver1115pending.submitted) html += `<br><small>Submitted: ${s.waiver1115pending.submitted}</small>`;
     html += `</div>`;
   }
-  html += `<div class="tt-click-hint">Click to view full state profile →</div>`;
+  html += `<div class="tt-click-hint">${isTouch ? "Tap again" : "Click"} to view full state profile →</div>`;
   return html;
 }
 
@@ -139,6 +141,24 @@ function moveTooltip(evt) {
   tooltip.style.top  = y + "px";
 }
 function hideTooltip() { tooltip.style.display = "none"; }
+
+function handleStateClick(evt, abbr) {
+  if (isTouch) {
+    if (touchedAbbr === abbr && tooltip.style.display === "block") {
+      window.location.href = "state.html?state=" + abbr + "&from=1115";
+    } else {
+      touchedAbbr = abbr;
+      showTooltip(evt, abbr);
+    }
+  } else {
+    window.location.href = "state.html?state=" + abbr + "&from=1115";
+  }
+}
+document.addEventListener("click", function(e) {
+  if (isTouch && !e.target.classList.contains("state-path")) {
+    touchedAbbr = null; hideTooltip();
+  }
+});
 
 // ── Map ─────────────────────────────────────────────────────────────────────
 const svg = d3.select("#map");
@@ -170,7 +190,7 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
         .on("mouseout",  hideTooltip)
         .on("click",    (evt,d) => {
           const abbr = FIPS[d.id.toString().padStart(2,"0")];
-          if (abbr) window.location.href = "state.html?state=" + abbr + "&from=1115";
+          if (abbr) handleStateClick(evt, abbr);
         });
 
     svg.selectAll(".state-stripe")
@@ -224,7 +244,7 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
         .on("mouseover", evt => showTooltip(evt, "DC"))
         .on("mousemove", moveTooltip)
         .on("mouseout",  hideTooltip)
-        .on("click", () => window.location.href = "state.html?state=DC&from=1115");
+        .on("click", evt => handleStateClick(evt, "DC"));
 
       if (hasPending1115("DC")) {
         svg.append("path").datum(dcFeature)
