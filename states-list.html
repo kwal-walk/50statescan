@@ -28,7 +28,7 @@
 </div>
 
 <div class="states-list-container">
-  <ul class="states-grid" id="states-grid"></ul>
+  <div class="states-cols-wrap" id="states-grid"></div>
 </div>
 
 <footer class="site-footer">
@@ -42,14 +42,52 @@
 const sorted = Object.entries(STATE_DATA)
   .sort((a, b) => a[1].name.localeCompare(b[1].name));
 
-const grid = document.getElementById("states-grid");
+// Group states by their first letter
+const groups = {};
 sorted.forEach(([abbr, s]) => {
-  const li = document.createElement("li");
-  const a  = document.createElement("a");
-  a.href = `state.html?state=${abbr}&from=list`;
-  a.textContent = s.name;
-  li.appendChild(a);
-  grid.appendChild(li);
+  const L = s.name[0].toUpperCase();
+  if (!groups[L]) groups[L] = [];
+  groups[L].push({ abbr, name: s.name });
+});
+
+// Build a flat list: letter headers interleaved with state entries
+const allItems = [];
+Object.keys(groups).sort().forEach(L => {
+  allItems.push({ type: "letter", letter: L });
+  groups[L].forEach(st => allItems.push({ type: "state", abbr: st.abbr, name: st.name }));
+});
+
+// Divide into 4 columns top-to-bottom, only breaking at letter boundaries
+const target = allItems.length / 4;
+const colItems = [[], [], [], []];
+let ci = 0, cnt = 0;
+for (const item of allItems) {
+  // Start a new column when we've exceeded the target AND we're at a letter header
+  if (ci < 3 && cnt >= target && item.type === "letter") { ci++; cnt = 0; }
+  colItems[ci].push(item);
+  cnt++;
+}
+
+// Render columns
+const wrap = document.getElementById("states-grid");
+colItems.forEach(col => {
+  const div = document.createElement("div");
+  div.className = "states-col";
+  col.forEach(item => {
+    if (item.type === "letter") {
+      const hdr = document.createElement("div");
+      hdr.className = "states-letter-hdr";
+      hdr.textContent = item.letter;
+      div.appendChild(hdr);
+    } else {
+      const a = document.createElement("a");
+      a.href = `state.html?state=${item.abbr}&from=list`;
+      a.textContent = item.name;
+      a.className = "states-link";
+      div.appendChild(a);
+    }
+  });
+  wrap.appendChild(div);
 });
 </script>
 

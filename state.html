@@ -368,6 +368,23 @@ if (!s) {
   html += `</div>`;
 
   html += `</div>`; // close state-page-content
+
+  // ── Prev / next state navigation ──────────────────────────────────────────
+  const navEntries = Object.entries(STATE_DATA)
+    .sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const navIdx = navEntries.findIndex(([a]) => a === abbr);
+  const prevE  = navIdx > 0                       ? navEntries[navIdx - 1] : null;
+  const nextE  = navIdx < navEntries.length - 1   ? navEntries[navIdx + 1] : null;
+
+  html += `<div class="state-nav-bar">`;
+  html += prevE
+    ? `<a class="state-nav-arrow state-nav-prev" href="state.html?state=${prevE[0]}&from=${from}" data-tip="${escAttr(prevE[1].name)}">&#8592;</a>`
+    : `<span></span>`;
+  html += nextE
+    ? `<a class="state-nav-arrow state-nav-next" href="state.html?state=${nextE[0]}&from=${from}" data-tip="${escAttr(nextE[1].name)}">&#8594;</a>`
+    : `<span></span>`;
+  html += `</div>`;
+
   container.innerHTML = html;
 }
 </script>

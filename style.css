@@ -501,11 +501,9 @@ img { max-width: 100%; display: block; }
 }
 .d-head:first-child { margin-top: 0; }
 .d-gap { margin-top: 0.45rem; }
-.d-ul, .d-ul-2 {
-  padding-left: 1.4rem; margin-bottom: 0.45rem;
-}
-.d-ul  { list-style-type: disc; }
-.d-ul-2 { list-style-type: circle; }
+.d-ul, .d-ul-2 { margin-bottom: 0.45rem; }
+.d-ul  { list-style-type: disc;   padding-left: 1.4rem; }
+.d-ul-2 { list-style-type: circle; padding-left: 2.8rem; }
 .d-ul li, .d-ul-2 li {
   margin-bottom: 0.2rem; line-height: 1.6;
 }
@@ -535,43 +533,101 @@ img { max-width: 100%; display: block; }
   border: 2px dashed var(--border);
 }
 
+/* ── State prev / next navigation ───────────────────────────────────────── */
+.state-nav-bar {
+  max-width: 900px;
+  margin: 0 auto 2.5rem;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.state-nav-arrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px; height: 46px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--navy);
+  font-size: 1.15rem;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.state-nav-arrow:hover {
+  background: var(--navy); color: #fff;
+  transform: translateY(-2px); box-shadow: var(--shadow-lg);
+  text-decoration: none;
+}
+/* Tooltip: state name appears above the arrow on hover */
+.state-nav-arrow::before {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  background: var(--navy); color: #fff;
+  padding: 0.28rem 0.72rem;
+  border-radius: 6px;
+  font-size: 0.77rem; font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.18s;
+  z-index: 100;
+}
+.state-nav-prev::before { left: 0; }
+.state-nav-next::before { right: 0; }
+.state-nav-arrow:hover::before { opacity: 1; }
+
 /* ── States List page ────────────────────────────────────────────────────── */
 .states-list-container {
   max-width: 1100px;
   margin: 2.5rem auto;
   padding: 0 2rem;
 }
-.states-grid {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.6rem 1.2rem;
+/* Four columns, filled top-to-bottom then left-to-right */
+.states-cols-wrap {
+  display: flex;
+  gap: 1.2rem;
+  align-items: flex-start;
 }
-.states-grid li a {
+.states-col { flex: 1; min-width: 0; }
+.states-letter-hdr {
+  font-size: 0.68rem; font-weight: 800;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--blue);
+  padding: 0.55rem 0 0.25rem;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 0.35rem;
+  margin-top: 1.1rem;
+}
+.states-col > .states-letter-hdr:first-child { margin-top: 0; padding-top: 0; }
+.states-link {
   display: block;
-  padding: 0.7rem 1rem;
+  padding: 0.55rem 0.9rem;
   background: var(--card-bg);
   border-radius: 8px;
   box-shadow: var(--shadow);
   color: var(--text);
-  font-size: 0.93rem;
-  font-weight: 500;
+  font-size: 0.9rem; font-weight: 500;
   text-decoration: none;
+  margin-bottom: 0.38rem;
   transition: background 0.15s, color 0.15s, transform 0.15s;
   border-left: 4px solid var(--border);
 }
-.states-grid li a:hover {
-  background: var(--navy);
-  color: #fff;
+.states-link:hover {
+  background: var(--navy); color: #fff;
   border-left-color: var(--amber);
   transform: translateX(3px);
   text-decoration: none;
 }
 @media (max-width: 800px) {
-  .states-grid { grid-template-columns: repeat(3, 1fr); }
+  .states-cols-wrap { gap: 0.8rem; }
 }
-@media (max-width: 540px) {
-  .states-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 600px) {
+  .states-cols-wrap { flex-wrap: wrap; }
+  .states-col { min-width: calc(50% - 0.6rem); }
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
