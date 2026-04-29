@@ -113,10 +113,23 @@ function showTooltip(evt, abbr) {
 }
 function moveTooltip(evt) {
   const pad = 14, tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
-  let x = evt.clientX + pad, y = evt.clientY + pad;
-  if (x + tw > window.innerWidth  - 10) x = evt.clientX - tw - pad;
-  if (y + th > window.innerHeight - 10) y = evt.clientY - th - pad;
-  tooltip.style.left = x + "px"; tooltip.style.top = y + "px";
+  let x, y;
+  if (isTouch) {
+    // Center horizontally so the tooltip is always fully visible on mobile
+    x = Math.max(10, Math.round((window.innerWidth - tw) / 2));
+    y = evt.clientY + pad;
+    if (y + th > window.innerHeight - 10) y = evt.clientY - th - pad;
+    y = Math.max(68, y);
+  } else {
+    x = evt.clientX + pad;
+    y = evt.clientY + pad;
+    if (x + tw > window.innerWidth  - 10) x = evt.clientX - tw - pad;
+    if (y + th > window.innerHeight - 10) y = evt.clientY - th - pad;
+    x = Math.max(10, x);
+    y = Math.max(10, y);
+  }
+  tooltip.style.left = x + "px";
+  tooltip.style.top  = y + "px";
 }
 function hideTooltip() { tooltip.style.display = "none"; }
 
