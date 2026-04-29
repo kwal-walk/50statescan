@@ -26,7 +26,7 @@
 
 <footer class="site-footer">
   <p>Developed for a Master of Public Health capstone project &nbsp;·&nbsp;
-     Data current as of May 2025 &nbsp;·&nbsp;
+     Data current as of Spring 2026 &nbsp;·&nbsp;
      <a href="https://github.com/kwal-walk/50statescan" target="_blank">GitHub</a>
   </p>
 </footer>
@@ -45,6 +45,200 @@ const backMap = {
   "list": ["states-list.html", "States List"]
 };
 const [backHref, backLabel] = backMap[from] || backMap["1115"];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function esc(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function escAttr(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+}
+
+function parseDates(datesStr) {
+  const labels = ["Approval","Effective","Expiration"];
+  let parts = [];
+  for (const label of labels) {
+    const m = datesStr.match(new RegExp(label + ":\\s*([^\\n]+)"));
+    if (m) parts.push(`${label}: ${m[1].trim()}`);
+  }
+  return parts.length ? parts.join("  ·  ") : esc(datesStr);
+}
+
+// Shorten a URL to a readable label
+function getUrlTitle(url) {
+  try {
+    const u = new URL(url.trim());
+    const host = u.hostname.replace(/^www\./, "");
+    const skip = new Set(["download","downloads","media","inline","index.html","index.htm"]);
+    const parts = u.pathname.split("/").filter(p => p && !skip.has(p.toLowerCase()) && !/^\d{4,}$/.test(p));
+    if (parts.length >= 1) {
+      let slug = parts[parts.length - 1]
+        .replace(/\.(html?|pdf|php|aspx?)$/i, "")
+        .replace(/^([a-z]{2})-/i, (_, st) => st.toUpperCase() + " ") // state-code prefix
+        .replace(/-\d{6,}(\.\w+)?$/, "")   // trailing date stamp
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+      if (!slug || slug.length <= 2) {
+        if (parts.length >= 2) slug = parts[parts.length - 2].replace(/[-_]/g," ").replace(/\b\w/g, c=>c.toUpperCase());
+      }
+      if (slug.length > 44) slug = slug.slice(0, 41) + "…";
+      if (slug && slug.length > 2) return `${host}: ${slug}`;
+    }
+    return host;
+  } catch (e) {
+    return url.length > 55 ? url.slice(0, 52) + "…" : url;
+  }
+}
+
+// Convert text with URLs (possibly in "Label - https://..." format) to HTML links
+function linkifyText(text) {
+  if (!text) return "";
+  return text.split(/\n/).map(line => {
+    // "Label text - https://url" → the label becomes the link text
+    const lm = line.match(/^(.+?)\s+-\s+(https?:\/\/\S+)\s*$/);
+    if (lm) {
+      const url = lm[2].replace(/[.,;)]+$/, "");
+      return `<a href="${escAttr(url)}" target="_blank" rel="noopener">${esc(lm[1].trim())}</a>`;
+    }
+    // Otherwise replace bare URLs with short links
+    return line.split(/(https?:\/\/[^\s]+)/).map((p, i) => {
+      if (i % 2 === 1) {
+        const url = p.replace(/[.,;)]+$/, "");
+        return `<a href="${escAttr(url)}" target="_blank" rel="noopener">${esc(getUrlTitle(url))}</a>`;
+      }
+      return esc(p);
+    }).join("");
+  }).join("<br>");
+}
+
+// Bold nutrition-related keywords (operates on already-escaped HTML)
+function boldKw(html) {
+  const kwRe = new RegExp(
+    "\\b(nutrition(?:al|ist|s)?|meals?|pantry|pantries|diet(?:ary)?|foods?|grocer(?:y|ies)|produce|" +
+    "medically tailored|medically supportive|home[- ]delivered|cooking|culinary|" +
+    "fruits?|vegetables?|calori(?:e|es|c)|hunger|hungry|snack(?:s)?)\\b", "gi"
+  );
+  // Only replace inside text nodes, not inside HTML tags
+  return html.replace(/(<[^>]*>)|([^<]+)/g, (match, tag, text) => {
+    if (tag) return tag;
+    return text.replace(kwRe, '<span class="kw-bold">$1</span>');
+  });
+}
+
+// Known section header names in 1115 waiver text
+const HEADER_RE = /^(Eligibility|Services?|Duration|Covered Services?|Target Population|Population|Description|Benefits?|Overview|Background|Requirements?|Coverage|Nutrition Services?|Goals?|Objectives?)$/i;
+
+// Build the "Sources" div from extracted source lines
+function buildSourceHtml(srcLines) {
+  const allText = srcLines.map(l => l.trim()).join(" ");
+  const found = allText.match(/https?:\/\/[^\s,]+/g) || [];
+  const urls = found.map(u => u.replace(/[.,;)]+$/, ""));
+
+  let h = `<div class="d-sources">`;
+  h += `<div class="d-sources-note">Text reproduced directly from referenced source(s).</div>`;
+  if (urls.length > 0) {
+    const links = urls.map(u =>
+      `<a href="${escAttr(u)}" target="_blank" rel="noopener">${esc(getUrlTitle(u))}</a>`
+    );
+    h += `<strong>Source${urls.length !== 1 ? "s" : ""}:</strong> ${links.join(" &nbsp;·&nbsp; ")}`;
+  } else {
+    const clean = allText.replace(/^source[-:\s]*/i, "").trim();
+    if (clean) h += `<strong>Source:</strong> ${esc(clean)}`;
+  }
+  h += `</div>`;
+  return h;
+}
+
+// Parse raw waiver detail text → clean HTML with proper lists, headers, sources
+function formatDetails(rawText) {
+  if (!rawText) return "";
+
+  const lines = rawText.split(/\r?\n/);
+  let srcLines = [], bodyLines = [], inSrc = false;
+  for (const line of lines) {
+    if (!inSrc && /^source/i.test(line.trim())) inSrc = true;
+    if (inSrc) srcLines.push(line);
+    else bodyLines.push(line);
+  }
+
+  let html = "";
+  let cur = null; // current open list: { type, items }
+
+  function flushList() {
+    if (!cur) return;
+    const isUl = cur.type === "ul" || cur.type === "ul2";
+    const TAG  = isUl ? "ul" : "ol";
+    const CLS  = { ul:"d-ul", ul2:"d-ul-2", ol:"d-ol", "ol-roman":"d-ol roman", ol2:"d-ol sub" }[cur.type] || "d-ol";
+    html += `<${TAG} class="${CLS}">${cur.items}</${TAG}>`;
+    cur = null;
+  }
+
+  function addItem(type, text) {
+    if (cur && cur.type === type) { cur.items += `<li>${text}</li>`; }
+    else { flushList(); cur = { type, items: `<li>${text}</li>` }; }
+  }
+
+  for (const rawLine of bodyLines) {
+    const trimmed = rawLine.trim();
+    // Strip surrounding quote chars the user added for plagiarism avoidance
+    let line = trimmed.replace(/^"+/, "").replace(/"+$/, "").trim();
+    if (!line) continue;
+
+    const leadSpaces = (rawLine.match(/^(\s*)/) || ["",""])[1].length;
+    const isIndented = leadSpaces >= 3;
+
+    // Bullet prefix: -, –, •, *, ·
+    const bm = line.match(/^[•\-–\*·]\s+([\s\S]*)/);
+    // 'o ' sub-bullet (common in CMS documents)
+    const om = isIndented && line.match(/^o\s+([\s\S]*)/);
+    const hasBullet = !!(bm || om);
+
+    // Content after stripping bullet prefix + inner quotes
+    let content = line;
+    if      (bm) content = bm[1].trim().replace(/^"+/, "").replace(/"+$/, "").trim();
+    else if (om) content = om[1].trim().replace(/^"+/, "").replace(/"+$/, "").trim();
+
+    // Roman numeral at start of content: i. ii. iii. iv. v. vi. vii. viii. ix. x. xi. xii.
+    const rmM = content.match(/^([ivx]{1,5})\.\s+([\s\S]+)/i);
+    const isRoman = rmM && /^(i{1,3}|iv|v|vi{0,3}|ix|x{1,2}|xi{0,2}|xii|xiv|xv)$/i.test(rmM[1]);
+
+    // Numbered: 1. 2. etc.
+    const nmM = content.match(/^(\d+)\.\s+([\s\S]+)/);
+
+    // Lettered sub-item: (A) (B) etc.
+    const ltM = isIndented && line.match(/^\([A-Za-z]\)\s+([\s\S]+)/);
+
+    if (isRoman) {
+      addItem("ol-roman", esc(rmM[2].trim()));
+    } else if (ltM) {
+      addItem("ol2", esc(ltM[1].trim()));
+    } else if (nmM && isIndented) {
+      addItem("ol2", esc(nmM[2].trim()));
+    } else if (nmM) {
+      addItem("ol", esc(nmM[2].trim()));
+    } else if (hasBullet) {
+      addItem(isIndented ? "ul2" : "ul", esc(content));
+    } else if (isIndented) {
+      // Indented plain text → sub-bullet
+      addItem("ul2", esc(line));
+    } else {
+      flushList();
+      if (HEADER_RE.test(line)) {
+        html += `<p class="d-head">${esc(line)}</p>`;
+      } else {
+        html += `<p class="d-p">${esc(line)}</p>`;
+      }
+    }
+  }
+
+  flushList();
+  if (srcLines.length > 0) html += buildSourceHtml(srcLines);
+  return boldKw(html);
+}
+
+// ── Page render ───────────────────────────────────────────────────────────────
 
 if (!s) {
   container.innerHTML = `
@@ -96,10 +290,9 @@ if (!s) {
     const w = s.waiver1115;
     html += `<div class="waiver-block">`;
     if (w.name) html += `<h3>${esc(w.name)}</h3>`;
-    if (w.count > 1) html += `<p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">
-      ${w.count} §1115 waivers identified for this state.</p>`;
+    if (w.count > 1) html += `<p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">${w.count} §1115 waivers identified for this state.</p>`;
     if (w.dates) html += `<div class="waiver-dates">${parseDates(w.dates)}</div>`;
-    if (w.details) html += `<div class="waiver-details">${esc(w.details)}</div>`;
+    if (w.details) html += `<div class="waiver-details">${formatDetails(w.details)}</div>`;
     html += `</div>`;
   } else {
     html += `<div class="no-waiver-card">No approved §1115 nutrition waiver identified for ${s.name}.</div>`;
@@ -118,7 +311,7 @@ if (!s) {
       <div class="waiver-block">`;
     if (p.name) html += `<h3>${esc(p.name)}</h3>`;
     if (p.submitted) html += `<div class="waiver-dates">Submitted: ${esc(p.submitted)}</div>`;
-    if (p.details) html += `<div class="waiver-details">${esc(p.details)}</div>`;
+    if (p.details) html += `<div class="waiver-details">${formatDetails(p.details)}</div>`;
     html += `</div></div>`;
   }
 
@@ -135,7 +328,7 @@ if (!s) {
       html += `<div class="waiver-block">`;
       if (w.name) html += `<h3>${esc(w.name)}</h3>`;
       if (w.dates) html += `<div class="waiver-dates">${parseDates(w.dates)}</div>`;
-      if (w.details) html += `<div class="waiver-details">${esc(w.details)}</div>`;
+      if (w.details) html += `<div class="waiver-details">${formatDetails(w.details)}</div>`;
       html += `</div>`;
     });
   } else {
@@ -157,13 +350,15 @@ if (!s) {
     html += `<div class="waiver-block">`;
     if (s.ilos.services) {
       html += `<h3>Nutrition-Related ILOS Services</h3>`;
-      html += `<div class="waiver-details">${esc(s.ilos.services)}</div>`;
+      html += `<div class="waiver-details">${formatDetails(s.ilos.services)}</div>`;
     }
-    if (s.ilos.links_garfield || s.ilos.links_add) {
-      html += `<div style="margin-top:1rem;font-size:0.83rem;color:var(--muted);">`;
-      if (s.ilos.links_garfield) html += `<p><strong>Government sources:</strong><br>${esc(s.ilos.links_garfield)}</p>`;
-      if (s.ilos.links_add) html += `<p style="margin-top:0.5rem;"><strong>Additional sources:</strong><br>${esc(s.ilos.links_add)}</p>`;
-      if (s.ilos.literature) html += `<p style="margin-top:0.5rem;"><strong>Published literature:</strong><br>${esc(s.ilos.literature)}</p>`;
+    const hasLinks = s.ilos.links_garfield || s.ilos.links_add || s.ilos.literature;
+    if (hasLinks) {
+      html += `<div class="d-sources">`;
+      html += `<div class="d-sources-note">Text reproduced directly from referenced source(s).</div>`;
+      if (s.ilos.links_garfield) html += `<p style="margin-bottom:0.4rem;"><strong>Government sources:</strong><br>${linkifyText(s.ilos.links_garfield)}</p>`;
+      if (s.ilos.links_add) html += `<p style="margin-bottom:0.4rem;"><strong>Additional sources:</strong><br>${linkifyText(s.ilos.links_add)}</p>`;
+      if (s.ilos.literature) html += `<p><strong>Published literature:</strong><br>${linkifyText(s.ilos.literature)}</p>`;
       html += `</div>`;
     }
     html += `</div>`;
@@ -174,23 +369,6 @@ if (!s) {
 
   html += `</div>`; // close state-page-content
   container.innerHTML = html;
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function esc(str) {
-  return String(str)
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-function parseDates(datesStr) {
-  const labels = ["Approval","Effective","Expiration"];
-  let parts = [];
-  for (const label of labels) {
-    const m = datesStr.match(new RegExp(label + ":\\s*([^\\n]+)"));
-    if (m) parts.push(`${label}: ${m[1].trim()}`);
-  }
-  return parts.length ? parts.join("  ·  ") : esc(datesStr);
 }
 </script>
 </body>

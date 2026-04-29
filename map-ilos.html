@@ -53,7 +53,7 @@
 
 <footer class="site-footer">
   <p>Developed for a Master of Public Health capstone project &nbsp;·&nbsp;
-     Data current as of May 2025 &nbsp;·&nbsp;
+     Data current as of Spring 2026 &nbsp;·&nbsp;
      <a href="https://github.com/kwal-walk/50statescan" target="_blank">GitHub</a>
   </p>
 </footer>
@@ -162,8 +162,8 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
     const dcFeature = states.features.find(d => d.id.toString().padStart(2,"0") === "11");
     if (dcFeature) {
       const dcCentroid = path.centroid(dcFeature);
-      const insetX = 810, insetY = 430, insetW = 90, insetH = 80;
-      const dcProj = d3.geoMercator().center([-77.0369,38.9072]).scale(55000)
+      const insetX = 820, insetY = 442, insetW = 65, insetH = 55;
+      const dcProj = d3.geoMercator().center([-77.0369,38.9072]).scale(25000)
         .translate([insetX + insetW/2, insetY + insetH/2]);
       const dcPath = d3.geoPath().projection(dcProj);
 
