@@ -12,18 +12,23 @@
 <nav class="site-nav">
   <div class="nav-inner">
     <a class="nav-brand" href="index.html">Nutrition Services in Medicaid</a>
-    <ul class="nav-links">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="map-1115.html">§1115 Waivers</a></li>
       <li><a href="map-1915.html">§1915 Waivers</a></li>
       <li><a href="map-ilos.html">ILOS</a></li>
-      <li><a href="states-list.html" class="active">States List</a></li>
+      <li><a href="states-list.html" class="active">States</a></li>
+      <li><a href="evidence.html">Evidence</a></li>
+      <li><a href="policy-memo.html">MO Policy Memo</a></li>
     </ul>
   </div>
 </nav>
 
 <div class="map-header">
-  <h1>States List</h1>
+  <h1>States</h1>
   <p>Click any state to view its full waiver profile</p>
 </div>
 
@@ -90,6 +95,6 @@ colItems.forEach(col => {
   wrap.appendChild(div);
 });
 </script>
-
+<script src="nav.js"></script>
 </body>
 </html>

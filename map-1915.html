@@ -14,15 +14,22 @@
 <nav class="site-nav">
   <div class="nav-inner">
     <a class="nav-brand" href="index.html">Nutrition Services in Medicaid</a>
-    <ul class="nav-links">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="map-1115.html">§1115 Waivers</a></li>
       <li><a href="map-1915.html" class="active">§1915 Waivers</a></li>
       <li><a href="map-ilos.html">ILOS</a></li>
-      <li><a href="states-list.html">States List</a></li>
+      <li><a href="states-list.html">States</a></li>
+      <li><a href="evidence.html">Evidence</a></li>
+      <li><a href="policy-memo.html">MO Policy Memo</a></li>
     </ul>
   </div>
 </nav>
+
+<div class="mobile-map-tip">📱 Maps are best viewed on desktop — tap <a href="states-list.html" style="color:#92400e;font-weight:700;">States</a> to browse on mobile</div>
 
 <div class="map-header">
   <h1>§1915 Home &amp; Community-Based Services Waivers — Nutrition Services</h1>
@@ -173,5 +180,6 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
       `<p style="padding:2rem;color:#c00">Map failed to load.<br><small>${err}</small></p>`;
   });
 </script>
+<script src="nav.js"></script>
 </body>
 </html>
