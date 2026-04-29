@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback — Medicaid Nutrition Waivers</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .feedback-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+    .feedback-wrap iframe {
+      width: 100%;
+      min-height: 900px;
+      border: none;
+      border-radius: var(--radius);
+      display: block;
+    }
+    @media (max-width: 600px) {
+      .feedback-wrap { padding: 1.25rem 1rem 2.5rem; }
+      .feedback-wrap iframe { min-height: 1100px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">Nutrition Services in Medicaid</a>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="map-1115.html">§1115 Waivers</a></li>
+      <li><a href="map-1915.html">§1915 Waivers</a></li>
+      <li><a href="map-ilos.html">ILOS</a></li>
+      <li><a href="states-list.html">States</a></li>
+      <li><a href="evidence.html">Evidence</a></li>
+      <li><a href="policy-memo.html">MO Policy Memo</a></li>
+      <li><a href="feedback.html" class="active">Feedback</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="map-header">
+  <h1>Share Your Feedback</h1>
+  <p>Help us improve this resource &nbsp;·&nbsp; Your responses are anonymous</p>
+</div>
+
+<div class="feedback-wrap">
+  <iframe
+    src="https://docs.google.com/forms/d/e/1FAIpQLSeVZ6PrFw6LuWPhLZ0Y607x5ergMVXaloTNBCFcDcl6opx6oQ/viewform?embedded=true"
+    title="Feedback Form"
+    frameborder="0"
+    marginheight="0"
+    marginwidth="0"
+  >Loading form…</iframe>
+</div>
+
+<footer class="site-footer">
+  <p>Developed for a Master of Public Health capstone project &nbsp;·&nbsp;
+     Data current as of Spring 2026 &nbsp;·&nbsp;
+     <a href="https://github.com/kwal-walk/50statescan" target="_blank">GitHub</a>
+  </p>
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>
